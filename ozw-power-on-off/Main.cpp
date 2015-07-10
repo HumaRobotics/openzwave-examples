@@ -214,26 +214,31 @@ void OnNotification
 
 void SetValue(bool value)
 {
-    int nodeid = 3;
+    int nodeid = 2;
+    printf("Locking\n");
     pthread_mutex_lock( &g_criticalSection );
     for( list<NodeInfo*>::iterator it = g_nodes.begin(); it != g_nodes.end(); ++it )
     {
+    printf("node\n");
 	NodeInfo* nodeInfo = *it;
 	if( nodeInfo->m_nodeId != nodeid ) continue;
 	for( list<ValueID>::iterator it2 = nodeInfo->m_values.begin();
  it2 != nodeInfo->m_values.end(); ++it2 )
 	{
+        printf("value\n");
 	    ValueID v = *it2;
 	    if( v.GetCommandClassId() == 0x25)
 	    {
-		bool* status;
+            printf("command\n");  
+
+            bool status;
 		printf("\n Setting Node %d to %s ",
 		       nodeInfo->m_nodeId,
 		       value ? "On" : "Off");
 		Manager::Get()->SetValue(v, value);
 		printf("\n Node %d is now %s \n",
 		       nodeInfo->m_nodeId,
-		       Manager::Get()->GetValueAsBool(v, status) ? "ON" : "OFF");
+		       Manager::Get()->GetValueAsBool(v,&status) ? "ON" : "OFF");
 
 		break;
 	    }
@@ -241,11 +246,12 @@ void SetValue(bool value)
     }
 
     pthread_mutex_unlock( &g_criticalSection );
+    printf("Unlocking\n");
 }
 
 int main(int argc, char* argv[])
 {
-    string port = "/dev/ttyUSB0";
+    string port = "/dev/ttyACM0";
     pthread_mutexattr_t mutexattr;
 
    // Set up mutual exclusion so that this thread has priority
